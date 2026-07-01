@@ -8,6 +8,8 @@ import (
 	"io/fs"
 	"net/http"
 	"time"
+
+	"mallstock/internal/models"
 )
 
 // Flash is a one-shot message shown after a redirect.
@@ -21,6 +23,7 @@ type Data struct {
 	Title           string
 	CSRFToken       string
 	IsAuthenticated bool
+	User            *models.User
 	CurrentPath     string
 	Flash           *Flash
 	Errors          map[string]string // field -> message (form validation)
