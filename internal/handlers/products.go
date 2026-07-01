@@ -108,6 +108,13 @@ func (h *ProductsHandler) List(w http.ResponseWriter, r *http.Request) {
 	if f.LowStock {
 		d.Form["low"] = "1"
 	}
+	// HTMX live search swaps just the results block.
+	if r.Header.Get("HX-Request") == "true" {
+		if err := h.Tmpl.RenderPartial(w, http.StatusOK, "products/list.html", "product-results", d); err != nil {
+			h.ServerError(w, r, err)
+		}
+		return
+	}
 	h.Render(w, r, http.StatusOK, "products/list.html", d)
 }
 

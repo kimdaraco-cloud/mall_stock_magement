@@ -24,6 +24,11 @@ func CurrentUser(ctx context.Context) *models.User {
 	return u
 }
 
+// WithUser returns a context carrying u — used by LoadUser and by tests.
+func WithUser(ctx context.Context, u *models.User) context.Context {
+	return context.WithValue(ctx, userKey, u)
+}
+
 // Auth bundles the dependencies the auth middleware needs.
 type Auth struct {
 	Session *scs.SessionManager
@@ -45,7 +50,7 @@ func (a *Auth) LoadUser(next http.Handler) http.Handler {
 			next.ServeHTTP(w, r)
 			return
 		}
-		next.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), userKey, u)))
+		next.ServeHTTP(w, r.WithContext(WithUser(r.Context(), u)))
 	})
 }
 

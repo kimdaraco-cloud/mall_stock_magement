@@ -79,3 +79,16 @@ Ambiguous calls made during the build, with rationale. Newest at the bottom.
   UI/DECISIONS rather than silently truncating.
 - **Home page replaced by the dashboard** — `/` is the dashboard per plan.md
   §7; the Phase 0 hello page was removed.
+
+## Phase 5
+
+- **Seed loads sample data only into an empty catalog** — re-running
+  `make seed` never duplicates or disturbs existing data; users are upserted
+  by email. Seeded movements go through the StockService so even sample data
+  respects the stock invariant.
+- **HTMX live search swaps a `product-results` block** — the products handler
+  returns just that partial when the `HX-Request` header is present;
+  `hx-push-url` keeps URLs shareable. Other lists stay plain GET forms.
+- **Handler/middleware tests are DB-free** — Healthz uses a fake pinger and
+  RequireAuth/RequireRole inject a user via `middleware.WithUser`; service
+  tests hit the real database (and skip when it's unreachable).

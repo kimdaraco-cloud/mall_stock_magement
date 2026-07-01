@@ -100,6 +100,6 @@ Non-negotiable rules:
 
 ## Current status
 
-Phase: **4 complete — Phase 5 (polish) in progress**. Update this line as phases complete so context is never lost between sessions.
+Phase: **5 complete** (Phases 0–5 done; Phase 6 advanced features not started). Update this line as phases complete so context is never lost between sessions.
 
 <!-- @ai-modified 2026-07-02 update current-status line after Phase 0 -->
