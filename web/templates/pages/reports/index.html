@@ -1,0 +1,22 @@
+<!-- @ai-modified 2026-07-02 add reports index page -->
+{{define "content"}}
+<h1 class="text-2xl font-bold tracking-tight">Reports</h1>
+
+<div class="mt-6 grid gap-4 md:grid-cols-3">
+    <a href="/reports/low-stock" class="rounded-lg bg-white p-6 shadow transition hover:shadow-md">
+        <div class="text-2xl">⚠️</div>
+        <h2 class="mt-2 font-semibold">Low stock</h2>
+        <p class="mt-1 text-sm text-gray-600">Products at or below reorder level, with suggested reorder quantities.</p>
+    </a>
+    <a href="/reports/valuation" class="rounded-lg bg-white p-6 shadow transition hover:shadow-md">
+        <div class="text-2xl">💰</div>
+        <h2 class="mt-2 font-semibold">Stock valuation</h2>
+        <p class="mt-1 text-sm text-gray-600">Total stock value (qty × cost) grouped by store and category.</p>
+    </a>
+    <a href="/reports/movements" class="rounded-lg bg-white p-6 shadow transition hover:shadow-md">
+        <div class="text-2xl">🔄</div>
+        <h2 class="mt-2 font-semibold">Movements</h2>
+        <p class="mt-1 text-sm text-gray-600">Stock in/out/adjustments for a date range.</p>
+    </a>
+</div>
+{{end}}

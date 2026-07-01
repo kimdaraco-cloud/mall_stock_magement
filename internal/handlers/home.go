@@ -1,34 +1,15 @@
-// @ai-modified 2026-07-02 add home and healthz handlers
+// @ai-modified 2026-07-02 slim to healthz only; dashboard replaced the home page
 package handlers
 
 import (
 	"context"
-	"log/slog"
 	"net/http"
 	"time"
-
-	"mallstock/internal/templates"
 )
 
 // Pinger is the subset of the DB pool the health check needs.
 type Pinger interface {
 	Ping(ctx context.Context) error
-}
-
-// Home renders the landing page.
-type Home struct {
-	Tmpl *templates.Cache
-	Log  *slog.Logger
-}
-
-func (h *Home) Index(w http.ResponseWriter, r *http.Request) {
-	d := templates.NewData()
-	d.Title = "Home"
-	d.CurrentPath = r.URL.Path
-	if err := h.Tmpl.Render(w, http.StatusOK, "home.html", d); err != nil {
-		h.Log.Error("render home", "err", err)
-		http.Error(w, "internal server error", http.StatusInternalServerError)
-	}
 }
 
 // Healthz reports app + database health.

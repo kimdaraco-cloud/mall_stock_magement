@@ -78,6 +78,7 @@ func run() error {
 	supplierRepo := &repository.SupplierRepo{DB: pool}
 	productRepo := &repository.ProductRepo{DB: pool}
 	movementRepo := &repository.MovementRepo{DB: pool}
+	reportRepo := &repository.ReportRepo{DB: pool}
 
 	// Services.
 	authSvc := &service.AuthService{Users: userRepo}
@@ -87,10 +88,12 @@ func run() error {
 	supplierSvc := &service.SupplierService{Suppliers: supplierRepo}
 	productSvc := &service.ProductService{Products: productRepo}
 	stockSvc := &service.StockService{Pool: pool, Movements: movementRepo}
+	reportSvc := &service.ReportService{Reports: reportRepo, Movements: movementRepo}
 
 	// Handlers.
 	base := &handlers.Base{Tmpl: tmpl, Log: log, Session: session}
-	home := &handlers.Home{Tmpl: tmpl, Log: log}
+	dashH := &handlers.DashboardHandler{Base: base, Reports: reportSvc, Stock: stockSvc}
+	reportsH := &handlers.ReportsHandler{Base: base, Reports: reportSvc, Stores: storeSvc}
 	authH := &handlers.AuthHandler{Base: base, Auth: authSvc}
 	usersH := &handlers.UsersHandler{Base: base, Users: userSvc, Stores: storeRepo}
 	storesH := &handlers.StoresHandler{Base: base, Stores: storeSvc}
@@ -129,8 +132,17 @@ func run() error {
 		r.Group(func(r chi.Router) {
 			r.Use(middleware.RequireAuth)
 
-			r.Get("/", home.Index)
+			r.Get("/", dashH.Index)
 			r.Post("/logout", authH.Logout)
+
+			// Reports (all roles may view + export).
+			r.Route("/reports", func(r chi.Router) {
+				r.Get("/", reportsH.Index)
+				r.Get("/low-stock", reportsH.LowStock)
+				r.Get("/valuation", reportsH.Valuation)
+				r.Get("/movements", reportsH.Movements)
+				r.Get("/{name}/export.csv", reportsH.ExportCSV)
+			})
 
 			manage := middleware.RequireRole(models.RoleAdmin, models.RoleManager)
 

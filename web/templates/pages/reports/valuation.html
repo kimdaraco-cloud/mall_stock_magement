@@ -1,0 +1,57 @@
+<!-- @ai-modified 2026-07-02 add stock valuation report page -->
+{{define "content"}}
+<div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold tracking-tight">Stock valuation</h1>
+    <a href="/reports/valuation/export.csv"
+       class="rounded-md bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600">⬇ Export CSV</a>
+</div>
+
+<div class="mt-6 grid gap-6 lg:grid-cols-2">
+    <div>
+        <h2 class="text-lg font-semibold">By store</h2>
+        <div class="mt-3 overflow-hidden rounded-lg bg-white shadow">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+                    <tr><th class="px-4 py-3">Store</th><th class="px-4 py-3 text-right">Products</th>
+                        <th class="px-4 py-3 text-right">Units</th><th class="px-4 py-3 text-right">Value</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {{range $v := .Data.ByStore}}
+                    <tr>
+                        <td class="px-4 py-3 font-medium">{{$v.Group}}</td>
+                        <td class="px-4 py-3 text-right">{{$v.Products}}</td>
+                        <td class="px-4 py-3 text-right">{{$v.Units}}</td>
+                        <td class="px-4 py-3 text-right font-semibold">{{$v.Value}}</td>
+                    </tr>
+                    {{else}}
+                    <tr><td colspan="4" class="px-4 py-8 text-center text-gray-500">No products yet.</td></tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div>
+        <h2 class="text-lg font-semibold">By category</h2>
+        <div class="mt-3 overflow-hidden rounded-lg bg-white shadow">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+                    <tr><th class="px-4 py-3">Category</th><th class="px-4 py-3 text-right">Products</th>
+                        <th class="px-4 py-3 text-right">Units</th><th class="px-4 py-3 text-right">Value</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {{range $v := .Data.ByCategory}}
+                    <tr>
+                        <td class="px-4 py-3 font-medium">{{$v.Group}}</td>
+                        <td class="px-4 py-3 text-right">{{$v.Products}}</td>
+                        <td class="px-4 py-3 text-right">{{$v.Units}}</td>
+                        <td class="px-4 py-3 text-right font-semibold">{{$v.Value}}</td>
+                    </tr>
+                    {{else}}
+                    <tr><td colspan="4" class="px-4 py-8 text-center text-gray-500">No products yet.</td></tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{{end}}

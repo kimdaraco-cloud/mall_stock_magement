@@ -67,3 +67,15 @@ Ambiguous calls made during the build, with rationale. Newest at the bottom.
   with a confirm dialog fits better than a dedicated page.
 - **All roles may record stock in/out/adjust** — per the §8 capability matrix
   (staff included); only catalog *editing* is restricted.
+
+## Phase 4
+
+- **Suggested reorder quantity = `GREATEST(reorder_level*2 − quantity, 1)`** —
+  simple top-up-to-2× heuristic; plan.md doesn't prescribe a formula.
+- **Dashboard/valuation only count active products** — deactivated products
+  are historical noise; their remaining stock is excluded from value cards.
+- **Movement report page caps at 200 rows; CSV export caps at 10 000** — the
+  page stays fast, the export covers realistic audit needs; both stated in the
+  UI/DECISIONS rather than silently truncating.
+- **Home page replaced by the dashboard** — `/` is the dashboard per plan.md
+  §7; the Phase 0 hello page was removed.

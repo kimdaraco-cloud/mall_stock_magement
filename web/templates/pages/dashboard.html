@@ -1,0 +1,86 @@
+<!-- @ai-modified 2026-07-02 add dashboard with stats cards, low stock, recent moves -->
+{{define "content"}}
+{{$s := .Data.Stats}}
+<h1 class="text-2xl font-bold tracking-tight">Dashboard</h1>
+
+<div class="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div class="rounded-lg bg-white p-5 shadow">
+        <div class="text-xs font-medium uppercase text-gray-500">Products</div>
+        <div class="mt-1 text-3xl font-bold">{{$s.TotalProducts}}</div>
+        <a href="/products" class="mt-1 block text-xs text-indigo-600 hover:underline">View all →</a>
+    </div>
+    <div class="rounded-lg bg-white p-5 shadow">
+        <div class="text-xs font-medium uppercase text-gray-500">Stock value</div>
+        <div class="mt-1 text-3xl font-bold">{{$s.StockValue}}</div>
+        <a href="/reports/valuation" class="mt-1 block text-xs text-indigo-600 hover:underline">Valuation →</a>
+    </div>
+    <div class="rounded-lg bg-white p-5 shadow {{if gt $s.LowStockCount 0}}ring-2 ring-red-300{{end}}">
+        <div class="text-xs font-medium uppercase text-gray-500">Low stock</div>
+        <div class="mt-1 text-3xl font-bold {{if gt $s.LowStockCount 0}}text-red-600{{end}}">{{$s.LowStockCount}}</div>
+        <a href="/reports/low-stock" class="mt-1 block text-xs text-indigo-600 hover:underline">Report →</a>
+    </div>
+    <div class="rounded-lg bg-white p-5 shadow">
+        <div class="text-xs font-medium uppercase text-gray-500">Active stores</div>
+        <div class="mt-1 text-3xl font-bold">{{$s.ActiveStores}}</div>
+        <a href="/stores" class="mt-1 block text-xs text-indigo-600 hover:underline">Stores →</a>
+    </div>
+</div>
+
+<div class="mt-8 grid gap-6 lg:grid-cols-2">
+    <div>
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold">⚠️ Low stock</h2>
+            <a href="/reports/low-stock" class="text-sm text-indigo-600 hover:underline">Full report →</a>
+        </div>
+        <div class="mt-3 overflow-hidden rounded-lg bg-white shadow">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+                    <tr><th class="px-4 py-3">Product</th><th class="px-4 py-3">Store</th>
+                        <th class="px-4 py-3 text-right">Qty</th><th class="px-4 py-3 text-right">Reorder at</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {{range $it := .Data.LowStock}}
+                    <tr>
+                        <td class="px-4 py-3"><a href="/products/{{$it.ProductID}}" class="font-medium text-indigo-600 hover:underline">{{$it.Name}}</a></td>
+                        <td class="px-4 py-3 text-gray-600">{{$it.StoreName}}</td>
+                        <td class="px-4 py-3 text-right font-medium text-red-600">{{$it.Quantity}}</td>
+                        <td class="px-4 py-3 text-right text-gray-600">{{$it.ReorderLevel}}</td>
+                    </tr>
+                    {{else}}
+                    <tr><td colspan="4" class="px-4 py-8 text-center text-gray-500">🎉 Nothing is low on stock.</td></tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div>
+        <div class="flex items-center justify-between">
+            <h2 class="text-lg font-semibold">🕒 Recent movements</h2>
+            <a href="/movements" class="text-sm text-indigo-600 hover:underline">All movements →</a>
+        </div>
+        <div class="mt-3 overflow-hidden rounded-lg bg-white shadow">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+                    <tr><th class="px-4 py-3">When</th><th class="px-4 py-3">Product</th>
+                        <th class="px-4 py-3">Type</th><th class="px-4 py-3 text-right">Qty</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {{range $m := .Data.Recent}}
+                    <tr>
+                        <td class="px-4 py-3 whitespace-nowrap text-gray-600">{{$m.CreatedAt.Format "01-02 15:04"}}</td>
+                        <td class="px-4 py-3"><a href="/products/{{$m.ProductID}}" class="text-indigo-600 hover:underline">{{$m.ProductName}}</a></td>
+                        <td class="px-4 py-3">{{template "movement-badge" $m.MovementType}}</td>
+                        <td class="px-4 py-3 text-right font-medium">
+                            {{if eq $m.MovementType "in"}}+{{end}}{{if eq $m.MovementType "out"}}−{{end}}{{$m.Quantity}}
+                        </td>
+                    </tr>
+                    {{else}}
+                    <tr><td colspan="4" class="px-4 py-8 text-center text-gray-500">No stock movements yet.</td></tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{{end}}
