@@ -74,16 +74,30 @@ func run() error {
 	// Repositories.
 	userRepo := &repository.UserRepo{DB: pool}
 	storeRepo := &repository.StoreRepo{DB: pool}
+	categoryRepo := &repository.CategoryRepo{DB: pool}
+	supplierRepo := &repository.SupplierRepo{DB: pool}
+	productRepo := &repository.ProductRepo{DB: pool}
 
 	// Services.
 	authSvc := &service.AuthService{Users: userRepo}
 	userSvc := &service.UserService{Users: userRepo}
+	storeSvc := &service.StoreService{Stores: storeRepo}
+	categorySvc := &service.CategoryService{Categories: categoryRepo}
+	supplierSvc := &service.SupplierService{Suppliers: supplierRepo}
+	productSvc := &service.ProductService{Products: productRepo}
 
 	// Handlers.
 	base := &handlers.Base{Tmpl: tmpl, Log: log, Session: session}
 	home := &handlers.Home{Tmpl: tmpl, Log: log}
 	authH := &handlers.AuthHandler{Base: base, Auth: authSvc}
 	usersH := &handlers.UsersHandler{Base: base, Users: userSvc, Stores: storeRepo}
+	storesH := &handlers.StoresHandler{Base: base, Stores: storeSvc}
+	categoriesH := &handlers.CategoriesHandler{Base: base, Categories: categorySvc}
+	suppliersH := &handlers.SuppliersHandler{Base: base, Suppliers: supplierSvc}
+	productsH := &handlers.ProductsHandler{
+		Base: base, Products: productSvc, Stores: storeSvc,
+		Categories: categorySvc, Suppliers: supplierSvc,
+	}
 
 	authMW := &middleware.Auth{Session: session, Users: userSvc}
 
@@ -114,6 +128,62 @@ func run() error {
 
 			r.Get("/", home.Index)
 			r.Post("/logout", authH.Logout)
+
+			manage := middleware.RequireRole(models.RoleAdmin, models.RoleManager)
+
+			// Products: viewing for all, editing for admin/manager.
+			r.Route("/products", func(r chi.Router) {
+				r.Get("/", productsH.List)
+				r.Group(func(r chi.Router) {
+					r.Use(manage)
+					r.Get("/new", productsH.NewForm)
+					r.Post("/", productsH.Create)
+					r.Get("/{id}/edit", productsH.EditForm)
+					r.Post("/{id}", productsH.Update)
+					r.Post("/{id}/delete", productsH.Deactivate)
+				})
+				r.Get("/{id}", productsH.Detail)
+			})
+
+			// Stores.
+			r.Route("/stores", func(r chi.Router) {
+				r.Get("/", storesH.List)
+				r.Group(func(r chi.Router) {
+					r.Use(manage)
+					r.Get("/new", storesH.NewForm)
+					r.Post("/", storesH.Create)
+					r.Get("/{id}/edit", storesH.EditForm)
+					r.Post("/{id}", storesH.Update)
+					r.Post("/{id}/deactivate", storesH.SetActive(false))
+					r.Post("/{id}/activate", storesH.SetActive(true))
+				})
+			})
+
+			// Categories.
+			r.Route("/categories", func(r chi.Router) {
+				r.Get("/", categoriesH.List)
+				r.Group(func(r chi.Router) {
+					r.Use(manage)
+					r.Get("/new", categoriesH.NewForm)
+					r.Post("/", categoriesH.Create)
+					r.Get("/{id}/edit", categoriesH.EditForm)
+					r.Post("/{id}", categoriesH.Update)
+					r.Post("/{id}/delete", categoriesH.Delete)
+				})
+			})
+
+			// Suppliers.
+			r.Route("/suppliers", func(r chi.Router) {
+				r.Get("/", suppliersH.List)
+				r.Group(func(r chi.Router) {
+					r.Use(manage)
+					r.Get("/new", suppliersH.NewForm)
+					r.Post("/", suppliersH.Create)
+					r.Get("/{id}/edit", suppliersH.EditForm)
+					r.Post("/{id}", suppliersH.Update)
+					r.Post("/{id}/delete", suppliersH.Delete)
+				})
+			})
 
 			// Admin-only user management.
 			r.Route("/users", func(r chi.Router) {

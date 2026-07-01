@@ -1,0 +1,112 @@
+<!-- @ai-modified 2026-07-02 add product create/edit form -->
+{{define "content"}}
+<div class="mx-auto max-w-2xl">
+    <h1 class="text-2xl font-bold tracking-tight">{{.Title}}</h1>
+
+    <form method="POST"
+          action="{{with .Data.Product}}/products/{{.ID}}{{else}}/products{{end}}"
+          class="mt-6 space-y-4 rounded-lg bg-white p-6 shadow">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="sku" class="block text-sm font-medium">SKU</label>
+                <input id="sku" name="sku" type="text" value="{{.Form.sku}}"
+                       class="mt-1 block w-full rounded-md px-3 py-2 font-mono ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+                {{with .Errors.sku}}<p class="mt-1 text-sm text-red-600">{{.}}</p>{{end}}
+            </div>
+            <div>
+                <label for="barcode" class="block text-sm font-medium">Barcode <span class="text-gray-400">(optional)</span></label>
+                <input id="barcode" name="barcode" type="text" value="{{.Form.barcode}}"
+                       class="mt-1 block w-full rounded-md px-3 py-2 font-mono ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+
+        <div>
+            <label for="name" class="block text-sm font-medium">Name</label>
+            <input id="name" name="name" type="text" value="{{.Form.name}}"
+                   class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+            {{with .Errors.name}}<p class="mt-1 text-sm text-red-600">{{.}}</p>{{end}}
+        </div>
+
+        <div>
+            <label for="description" class="block text-sm font-medium">Description</label>
+            <textarea id="description" name="description" rows="2"
+                      class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">{{.Form.description}}</textarea>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+            <div>
+                <label for="store_id" class="block text-sm font-medium">Store</label>
+                <select id="store_id" name="store_id" class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300">
+                    <option value="">— choose —</option>
+                    {{range $s := .Data.Stores}}
+                    <option value="{{$s.ID}}" {{if eq $.Form.store_id (printf "%d" $s.ID)}}selected{{end}}>{{$s.Name}}</option>
+                    {{end}}
+                </select>
+                {{with .Errors.store_id}}<p class="mt-1 text-sm text-red-600">{{.}}</p>{{end}}
+            </div>
+            <div>
+                <label for="category_id" class="block text-sm font-medium">Category</label>
+                <select id="category_id" name="category_id" class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300">
+                    <option value="">— none —</option>
+                    {{range $c := .Data.Categories}}
+                    <option value="{{$c.ID}}" {{if eq $.Form.category_id (printf "%d" $c.ID)}}selected{{end}}>{{$c.Name}}</option>
+                    {{end}}
+                </select>
+            </div>
+            <div>
+                <label for="supplier_id" class="block text-sm font-medium">Supplier</label>
+                <select id="supplier_id" name="supplier_id" class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300">
+                    <option value="">— none —</option>
+                    {{range $s := .Data.Suppliers}}
+                    <option value="{{$s.ID}}" {{if eq $.Form.supplier_id (printf "%d" $s.ID)}}selected{{end}}>{{$s.Name}}</option>
+                    {{end}}
+                </select>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-4 gap-4">
+            <div>
+                <label for="cost_price" class="block text-sm font-medium">Cost price</label>
+                <input id="cost_price" name="cost_price" type="text" inputmode="decimal" value="{{.Form.cost_price}}"
+                       class="mt-1 block w-full rounded-md px-3 py-2 text-right ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+                {{with .Errors.cost_price}}<p class="mt-1 text-sm text-red-600">{{.}}</p>{{end}}
+            </div>
+            <div>
+                <label for="selling_price" class="block text-sm font-medium">Selling price</label>
+                <input id="selling_price" name="selling_price" type="text" inputmode="decimal" value="{{.Form.selling_price}}"
+                       class="mt-1 block w-full rounded-md px-3 py-2 text-right ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+                {{with .Errors.selling_price}}<p class="mt-1 text-sm text-red-600">{{.}}</p>{{end}}
+            </div>
+            <div>
+                <label for="reorder_level" class="block text-sm font-medium">Reorder level</label>
+                <input id="reorder_level" name="reorder_level" type="number" min="0" value="{{.Form.reorder_level}}"
+                       class="mt-1 block w-full rounded-md px-3 py-2 text-right ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+                {{with .Errors.reorder_level}}<p class="mt-1 text-sm text-red-600">{{.}}</p>{{end}}
+            </div>
+            <div>
+                <label for="unit" class="block text-sm font-medium">Unit</label>
+                <input id="unit" name="unit" type="text" value="{{.Form.unit}}"
+                       class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+
+        {{if not .Data.Product}}
+        <p class="rounded-md bg-blue-50 p-3 text-sm text-blue-800 ring-1 ring-blue-200">
+            New products start at quantity 0. Use <strong>Stock In</strong> on the product page to receive stock.
+        </p>
+        {{end}}
+
+        <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="is_active" {{if eq .Form.is_active "on"}}checked{{end}} class="rounded ring-1 ring-gray-300">
+            Active
+        </label>
+
+        <div class="flex gap-3 pt-2">
+            <button type="submit" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">Save</button>
+            <a href="/products" class="rounded-md px-4 py-2 text-sm ring-1 ring-gray-300 hover:bg-gray-50">Cancel</a>
+        </div>
+    </form>
+</div>
+{{end}}

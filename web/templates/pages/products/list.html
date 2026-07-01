@@ -1,0 +1,87 @@
+<!-- @ai-modified 2026-07-02 add product list with search, filters and pagination -->
+{{define "content"}}
+<div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold tracking-tight">Products</h1>
+    {{if .User.CanManageCatalog}}
+    <a href="/products/new" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">＋ New product</a>
+    {{end}}
+</div>
+
+<form method="GET" action="/products" class="mt-6 flex flex-wrap items-end gap-3 rounded-lg bg-white p-4 shadow">
+    <div class="grow">
+        <label for="q" class="block text-xs font-medium uppercase text-gray-500">Search</label>
+        <input id="q" name="q" type="search" value="{{.Form.q}}" placeholder="Name, SKU or barcode"
+               class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+    </div>
+    <div>
+        <label for="store" class="block text-xs font-medium uppercase text-gray-500">Store</label>
+        <select id="store" name="store" class="mt-1 rounded-md px-3 py-2 ring-1 ring-gray-300">
+            <option value="">All stores</option>
+            {{range $s := .Data.Stores}}
+            <option value="{{$s.ID}}" {{if eq $.Form.store (printf "%d" $s.ID)}}selected{{end}}>{{$s.Name}}</option>
+            {{end}}
+        </select>
+    </div>
+    <div>
+        <label for="category" class="block text-xs font-medium uppercase text-gray-500">Category</label>
+        <select id="category" name="category" class="mt-1 rounded-md px-3 py-2 ring-1 ring-gray-300">
+            <option value="">All categories</option>
+            {{range $c := .Data.Categories}}
+            <option value="{{$c.ID}}" {{if eq $.Form.category (printf "%d" $c.ID)}}selected{{end}}>{{$c.Name}}</option>
+            {{end}}
+        </select>
+    </div>
+    <label class="flex items-center gap-2 pb-2 text-sm">
+        <input type="checkbox" name="low" value="1" {{if eq .Form.low "1"}}checked{{end}} class="rounded ring-1 ring-gray-300">
+        Low stock only
+    </label>
+    <button type="submit" class="rounded-md bg-slate-700 px-4 py-2 text-sm font-medium text-white hover:bg-slate-600">Filter</button>
+</form>
+
+<div class="mt-4 overflow-hidden rounded-lg bg-white shadow">
+    <table class="min-w-full divide-y divide-gray-200 text-sm">
+        <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+            <tr>
+                <th class="px-4 py-3">SKU</th>
+                <th class="px-4 py-3">Name</th>
+                <th class="px-4 py-3">Store</th>
+                <th class="px-4 py-3">Category</th>
+                <th class="px-4 py-3 text-right">Price</th>
+                <th class="px-4 py-3 text-right">Qty</th>
+                <th class="px-4 py-3">Status</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {{range $p := .Data.Products}}
+            <tr class="{{if not $p.IsActive}}opacity-50{{end}}">
+                <td class="px-4 py-3 font-mono text-xs">{{$p.SKU}}</td>
+                <td class="px-4 py-3 font-medium"><a href="/products/{{$p.ID}}" class="text-indigo-600 hover:underline">{{$p.Name}}</a></td>
+                <td class="px-4 py-3 text-gray-600">{{$p.StoreName}}</td>
+                <td class="px-4 py-3 text-gray-600">{{if $p.CategoryName}}{{$p.CategoryName}}{{else}}—{{end}}</td>
+                <td class="px-4 py-3 text-right">{{$p.SellingPrice}}</td>
+                <td class="px-4 py-3 text-right font-medium {{if $p.LowStock}}text-red-600{{end}}">
+                    {{$p.Quantity}} {{$p.Unit}}
+                    {{if $p.LowStock}}<span title="At or below reorder level">⚠︎</span>{{end}}
+                </td>
+                <td class="px-4 py-3">
+                    {{if $p.IsActive}}<span class="text-green-700">Active</span>
+                    {{else}}<span class="text-gray-400">Inactive</span>{{end}}
+                </td>
+            </tr>
+            {{else}}
+            <tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">No products match. {{if .User.CanManageCatalog}}<a href="/products/new" class="text-indigo-600 hover:underline">Add one</a>.{{end}}</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+
+{{with .Data.Pagination}}
+<div class="mt-4 flex items-center justify-between text-sm text-gray-600">
+    <span>{{.Total}} product{{if ne .Total 1}}s{{end}} · page {{.Page}} of {{.TotalPages}}</span>
+    <div class="flex gap-2">
+        {{if .PrevURL}}<a href="{{.PrevURL}}" class="rounded-md px-3 py-1.5 ring-1 ring-gray-300 hover:bg-gray-50">← Prev</a>{{end}}
+        {{if .NextURL}}<a href="{{.NextURL}}" class="rounded-md px-3 py-1.5 ring-1 ring-gray-300 hover:bg-gray-50">Next →</a>{{end}}
+    </div>
+</div>
+{{end}}
+{{end}}

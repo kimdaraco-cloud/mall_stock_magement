@@ -1,0 +1,50 @@
+<!-- @ai-modified 2026-07-02 add product detail page -->
+{{define "content"}}
+{{$p := .Data.Product}}
+<div class="flex items-start justify-between">
+    <div>
+        <h1 class="text-2xl font-bold tracking-tight">{{$p.Name}}</h1>
+        <p class="mt-1 text-sm text-gray-500">
+            SKU <span class="font-mono">{{$p.SKU}}</span>
+            {{if $p.Barcode}} · Barcode <span class="font-mono">{{$p.Barcode}}</span>{{end}}
+            · {{$p.StoreName}}
+            {{if not $p.IsActive}} · <span class="text-red-600">Inactive</span>{{end}}
+        </p>
+    </div>
+    {{if .User.CanManageCatalog}}
+    <div class="flex gap-2">
+        <a href="/products/{{$p.ID}}/edit" class="rounded-md px-4 py-2 text-sm ring-1 ring-gray-300 hover:bg-gray-50">Edit</a>
+        <form method="POST" action="/products/{{$p.ID}}/delete"
+              onsubmit="return confirm('Deactivate this product?')">
+            <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
+            <button type="submit" class="rounded-md px-4 py-2 text-sm text-red-600 ring-1 ring-red-200 hover:bg-red-50">Deactivate</button>
+        </form>
+    </div>
+    {{end}}
+</div>
+
+<div class="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4">
+    <div class="rounded-lg bg-white p-4 shadow">
+        <div class="text-xs uppercase text-gray-500">Current stock</div>
+        <div class="mt-1 text-2xl font-bold {{if $p.LowStock}}text-red-600{{end}}">{{$p.Quantity}} {{$p.Unit}}</div>
+        {{if $p.LowStock}}<div class="text-xs text-red-600">at/below reorder level ({{$p.ReorderLevel}})</div>{{end}}
+    </div>
+    <div class="rounded-lg bg-white p-4 shadow">
+        <div class="text-xs uppercase text-gray-500">Cost price</div>
+        <div class="mt-1 text-2xl font-bold">{{$p.CostPrice}}</div>
+    </div>
+    <div class="rounded-lg bg-white p-4 shadow">
+        <div class="text-xs uppercase text-gray-500">Selling price</div>
+        <div class="mt-1 text-2xl font-bold">{{$p.SellingPrice}}</div>
+    </div>
+    <div class="rounded-lg bg-white p-4 shadow">
+        <div class="text-xs uppercase text-gray-500">Category / Supplier</div>
+        <div class="mt-1 text-sm font-medium">{{if $p.CategoryName}}{{$p.CategoryName}}{{else}}—{{end}}</div>
+        <div class="text-sm text-gray-600">{{if $p.SupplierName}}{{$p.SupplierName}}{{else}}—{{end}}</div>
+    </div>
+</div>
+
+{{if $p.Description}}
+<p class="mt-4 rounded-lg bg-white p-4 text-sm text-gray-700 shadow">{{$p.Description}}</p>
+{{end}}
+{{end}}

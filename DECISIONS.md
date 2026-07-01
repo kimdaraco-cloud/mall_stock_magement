@@ -36,3 +36,19 @@ Ambiguous calls made during the build, with rationale. Newest at the bottom.
   cannot deactivate their own account.
 - **Login treats a deactivated account as invalid credentials** — avoids
   leaking which emails exist.
+
+## Phase 2
+
+- **Prices are decimal strings end-to-end** — Go carries prices as validated
+  strings (`^\d{1,10}(\.\d{1,2})?$`), cast with `::numeric` on write and
+  `::text` on read. No float ever touches money; no decimal dependency added.
+- **Stores/products soft-delete only; categories/suppliers hard-delete** —
+  stores and products are referenced by history, so they toggle `is_active`.
+  Categories/suppliers use plain DELETE; products keep working because the FK
+  is `ON DELETE SET NULL`.
+- **Catalog permissions** — list/detail pages are visible to every logged-in
+  role; create/edit/deactivate routes are gated to admin+manager, matching the
+  plan.md §8 matrix.
+- **New products always start at quantity 0** — receiving stock is Phase 3's
+  transactional stock-in; letting product creation set a quantity would bypass
+  the stock invariant.

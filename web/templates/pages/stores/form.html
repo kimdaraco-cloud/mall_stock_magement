@@ -1,0 +1,67 @@
+<!-- @ai-modified 2026-07-02 add store create/edit form -->
+{{define "content"}}
+<div class="mx-auto max-w-xl">
+    <h1 class="text-2xl font-bold tracking-tight">{{.Title}}</h1>
+
+    <form method="POST"
+          action="{{with .Data.Store}}/stores/{{.ID}}{{else}}/stores{{end}}"
+          class="mt-6 space-y-4 rounded-lg bg-white p-6 shadow">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+
+        <div>
+            <label for="name" class="block text-sm font-medium">Name</label>
+            <input id="name" name="name" type="text" value="{{.Form.name}}"
+                   class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+            {{with .Errors.name}}<p class="mt-1 text-sm text-red-600">{{.}}</p>{{end}}
+        </div>
+
+        <div class="grid grid-cols-3 gap-4">
+            <div>
+                <label for="unit_number" class="block text-sm font-medium">Unit no.</label>
+                <input id="unit_number" name="unit_number" type="text" value="{{.Form.unit_number}}"
+                       class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="floor" class="block text-sm font-medium">Floor</label>
+                <input id="floor" name="floor" type="text" value="{{.Form.floor}}"
+                       class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="category" class="block text-sm font-medium">Category</label>
+                <input id="category" name="category" type="text" value="{{.Form.category}}"
+                       class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="contact_name" class="block text-sm font-medium">Contact name</label>
+                <input id="contact_name" name="contact_name" type="text" value="{{.Form.contact_name}}"
+                       class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="contact_phone" class="block text-sm font-medium">Contact phone</label>
+                <input id="contact_phone" name="contact_phone" type="text" value="{{.Form.contact_phone}}"
+                       class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+            </div>
+        </div>
+
+        <div>
+            <label for="contact_email" class="block text-sm font-medium">Contact email</label>
+            <input id="contact_email" name="contact_email" type="text" value="{{.Form.contact_email}}"
+                   class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+            {{with .Errors.contact_email}}<p class="mt-1 text-sm text-red-600">{{.}}</p>{{end}}
+        </div>
+
+        <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="is_active" {{if eq .Form.is_active "on"}}checked{{end}} class="rounded ring-1 ring-gray-300">
+            Active
+        </label>
+
+        <div class="flex gap-3 pt-2">
+            <button type="submit" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">Save</button>
+            <a href="/stores" class="rounded-md px-4 py-2 text-sm ring-1 ring-gray-300 hover:bg-gray-50">Cancel</a>
+        </div>
+    </form>
+</div>
+{{end}}

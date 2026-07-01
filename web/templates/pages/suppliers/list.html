@@ -1,0 +1,47 @@
+<!-- @ai-modified 2026-07-02 add suppliers list page -->
+{{define "content"}}
+<div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold tracking-tight">Suppliers</h1>
+    {{if .User.CanManageCatalog}}
+    <a href="/suppliers/new" class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500">＋ New supplier</a>
+    {{end}}
+</div>
+
+<div class="mt-6 overflow-hidden rounded-lg bg-white shadow">
+    <table class="min-w-full divide-y divide-gray-200 text-sm">
+        <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+            <tr>
+                <th class="px-4 py-3">Name</th>
+                <th class="px-4 py-3">Contact</th>
+                <th class="px-4 py-3">Email</th>
+                <th class="px-4 py-3">Phone</th>
+                {{if .User.CanManageCatalog}}<th class="px-4 py-3 text-right">Actions</th>{{end}}
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            {{range $s := .Data.Suppliers}}
+            <tr>
+                <td class="px-4 py-3 font-medium">{{$s.Name}}</td>
+                <td class="px-4 py-3 text-gray-600">{{$s.ContactPerson}}</td>
+                <td class="px-4 py-3 text-gray-600">{{$s.Email}}</td>
+                <td class="px-4 py-3 text-gray-600">{{$s.Phone}}</td>
+                {{if $.User.CanManageCatalog}}
+                <td class="px-4 py-3 text-right">
+                    <div class="flex justify-end gap-2">
+                        <a href="/suppliers/{{$s.ID}}/edit" class="text-indigo-600 hover:underline">Edit</a>
+                        <form method="POST" action="/suppliers/{{$s.ID}}/delete"
+                              onsubmit="return confirm('Delete this supplier?')">
+                            <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
+                            <button type="submit" class="text-red-600 hover:underline">Delete</button>
+                        </form>
+                    </div>
+                </td>
+                {{end}}
+            </tr>
+            {{else}}
+            <tr><td colspan="5" class="px-4 py-8 text-center text-gray-500">No suppliers yet.</td></tr>
+            {{end}}
+        </tbody>
+    </table>
+</div>
+{{end}}
