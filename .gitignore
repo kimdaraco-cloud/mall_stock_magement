@@ -1,0 +1,28 @@
+# @ai-modified 2026-07-02 create .gitignore per CLAUDE.md rules
+
+# Binaries / build output
+bin/
+*.exe
+*.test
+
+# Environment / secrets (keep .env.example committed)
+.env
+.env.*
+!.env.example
+
+# Live reload (air)
+tmp/
+
+# Generated Tailwind CSS output (built, not committed)
+web/static/css/tailwind.css
+web/static/css/output.css
+
+# Go
+vendor/
+coverage.out
+*.out
+
+# Editor / OS
+.idea/
+.vscode/
+.DS_Store
