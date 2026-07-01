@@ -100,6 +100,6 @@ Non-negotiable rules:
 
 ## Current status
 
-Phase: **2 complete — Phase 3 (stock operations) in progress**. Update this line as phases complete so context is never lost between sessions.
+Phase: **3 complete — Phase 4 (dashboard & reports) in progress**. Update this line as phases complete so context is never lost between sessions.
 
 <!-- @ai-modified 2026-07-02 update current-status line after Phase 0 -->

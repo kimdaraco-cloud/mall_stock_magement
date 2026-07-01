@@ -1,0 +1,48 @@
+<!-- @ai-modified 2026-07-02 add shared stock-in/stock-out form -->
+{{define "content"}}
+{{$p := .Data.Product}}
+{{$in := eq .Data.Mode "in"}}
+<div class="mx-auto max-w-lg">
+    <h1 class="text-2xl font-bold tracking-tight">
+        {{if $in}}📥 Stock in{{else}}📤 Stock out{{end}}
+    </h1>
+    <p class="mt-1 text-sm text-gray-500">
+        {{$p.Name}} · SKU <span class="font-mono">{{$p.SKU}}</span> ·
+        current stock <strong>{{$p.Quantity}} {{$p.Unit}}</strong>
+    </p>
+
+    <form method="POST" action="/products/{{$p.ID}}/stock-{{.Data.Mode}}"
+          class="mt-6 space-y-4 rounded-lg bg-white p-6 shadow">
+        <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+
+        <div>
+            <label for="quantity" class="block text-sm font-medium">Quantity</label>
+            <input id="quantity" name="quantity" type="number" min="1" required autofocus value="{{.Form.quantity}}"
+                   class="mt-1 block w-full rounded-md px-3 py-2 text-right text-lg ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+            {{with .Errors.quantity}}<p class="mt-1 text-sm text-red-600">{{.}}</p>{{end}}
+        </div>
+
+        <div>
+            <label for="reference" class="block text-sm font-medium">
+                Reference <span class="text-gray-400">({{if $in}}PO / invoice no.{{else}}issue / sale / damage ref{{end}})</span>
+            </label>
+            <input id="reference" name="reference" type="text" value="{{.Form.reference}}"
+                   class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div>
+            <label for="notes" class="block text-sm font-medium">Notes</label>
+            <textarea id="notes" name="notes" rows="2"
+                      class="mt-1 block w-full rounded-md px-3 py-2 ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">{{.Form.notes}}</textarea>
+        </div>
+
+        <div class="flex gap-3 pt-2">
+            <button type="submit"
+                    class="rounded-md px-4 py-2 text-sm font-medium text-white {{if $in}}bg-green-600 hover:bg-green-500{{else}}bg-amber-600 hover:bg-amber-500{{end}}">
+                {{if $in}}Receive stock{{else}}Issue stock{{end}}
+            </button>
+            <a href="/products/{{$p.ID}}" class="rounded-md px-4 py-2 text-sm ring-1 ring-gray-300 hover:bg-gray-50">Cancel</a>
+        </div>
+    </form>
+</div>
+{{end}}

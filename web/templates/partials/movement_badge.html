@@ -1,0 +1,6 @@
+<!-- @ai-modified 2026-07-02 add movement type badge partial -->
+{{define "movement-badge"}}
+{{if eq . "in"}}<span class="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">in</span>
+{{else if eq . "out"}}<span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800">out</span>
+{{else}}<span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800">adjustment</span>{{end}}
+{{end}}

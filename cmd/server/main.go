@@ -77,6 +77,7 @@ func run() error {
 	categoryRepo := &repository.CategoryRepo{DB: pool}
 	supplierRepo := &repository.SupplierRepo{DB: pool}
 	productRepo := &repository.ProductRepo{DB: pool}
+	movementRepo := &repository.MovementRepo{DB: pool}
 
 	// Services.
 	authSvc := &service.AuthService{Users: userRepo}
@@ -85,6 +86,7 @@ func run() error {
 	categorySvc := &service.CategoryService{Categories: categoryRepo}
 	supplierSvc := &service.SupplierService{Suppliers: supplierRepo}
 	productSvc := &service.ProductService{Products: productRepo}
+	stockSvc := &service.StockService{Pool: pool, Movements: movementRepo}
 
 	// Handlers.
 	base := &handlers.Base{Tmpl: tmpl, Log: log, Session: session}
@@ -96,8 +98,9 @@ func run() error {
 	suppliersH := &handlers.SuppliersHandler{Base: base, Suppliers: supplierSvc}
 	productsH := &handlers.ProductsHandler{
 		Base: base, Products: productSvc, Stores: storeSvc,
-		Categories: categorySvc, Suppliers: supplierSvc,
+		Categories: categorySvc, Suppliers: supplierSvc, Stock: stockSvc,
 	}
+	stockH := &handlers.StockHandler{Base: base, Stock: stockSvc, Products: productSvc, Stores: storeSvc}
 
 	authMW := &middleware.Auth{Session: session, Users: userSvc}
 
@@ -143,7 +146,17 @@ func run() error {
 					r.Post("/{id}/delete", productsH.Deactivate)
 				})
 				r.Get("/{id}", productsH.Detail)
+
+				// Stock operations: every role may record them (plan.md §8).
+				r.Get("/{id}/stock-in", stockH.StockForm(models.MovementIn))
+				r.Post("/{id}/stock-in", stockH.StockIn)
+				r.Get("/{id}/stock-out", stockH.StockForm(models.MovementOut))
+				r.Post("/{id}/stock-out", stockH.StockOut)
+				r.Post("/{id}/adjust", stockH.Adjust)
 			})
+
+			// Movement history.
+			r.Get("/movements", stockH.History)
 
 			// Stores.
 			r.Route("/stores", func(r chi.Router) {

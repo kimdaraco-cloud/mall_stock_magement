@@ -47,4 +47,64 @@
 {{if $p.Description}}
 <p class="mt-4 rounded-lg bg-white p-4 text-sm text-gray-700 shadow">{{$p.Description}}</p>
 {{end}}
+
+<div class="mt-6 flex flex-wrap items-center gap-3">
+    <a href="/products/{{$p.ID}}/stock-in"
+       class="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-500">📥 Stock in</a>
+    <a href="/products/{{$p.ID}}/stock-out"
+       class="rounded-md bg-amber-600 px-4 py-2 text-sm font-medium text-white hover:bg-amber-500">📤 Stock out</a>
+
+    <form method="POST" action="/products/{{$p.ID}}/adjust" class="ml-auto flex items-end gap-2"
+          onsubmit="return confirm('Correct the stock count to ' + this.quantity.value + '?')">
+        <input type="hidden" name="csrf_token" value="{{$.CSRFToken}}">
+        <div>
+            <label for="adjust-qty" class="block text-xs font-medium uppercase text-gray-500">Correct count to</label>
+            <input id="adjust-qty" name="quantity" type="number" min="0" required placeholder="{{$p.Quantity}}"
+                   class="mt-1 w-32 rounded-md px-3 py-2 text-right ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div>
+            <label for="adjust-ref" class="block text-xs font-medium uppercase text-gray-500">Reason</label>
+            <input id="adjust-ref" name="reference" type="text" placeholder="count correction"
+                   class="mt-1 w-48 rounded-md px-3 py-2 ring-1 ring-gray-300 focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <button type="submit" class="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-500">Adjust</button>
+    </form>
+</div>
+
+<div class="mt-6">
+    <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold">Recent movements</h2>
+        <a href="/movements?product={{$p.ID}}" class="text-sm text-indigo-600 hover:underline">Full history →</a>
+    </div>
+    <div class="mt-3 overflow-hidden rounded-lg bg-white shadow">
+        <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+                <tr>
+                    <th class="px-4 py-3">When</th>
+                    <th class="px-4 py-3">Type</th>
+                    <th class="px-4 py-3 text-right">Qty</th>
+                    <th class="px-4 py-3 text-right">Balance</th>
+                    <th class="px-4 py-3">Reference</th>
+                    <th class="px-4 py-3">By</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                {{range $m := .Data.Movements}}
+                <tr>
+                    <td class="px-4 py-3 whitespace-nowrap text-gray-600">{{$m.CreatedAt.Format "2006-01-02 15:04"}}</td>
+                    <td class="px-4 py-3">{{template "movement-badge" $m.MovementType}}</td>
+                    <td class="px-4 py-3 text-right font-medium">
+                        {{if eq $m.MovementType "in"}}+{{end}}{{if eq $m.MovementType "out"}}−{{end}}{{$m.Quantity}}
+                    </td>
+                    <td class="px-4 py-3 text-right">{{$m.QuantityAfter}}</td>
+                    <td class="px-4 py-3 text-gray-600">{{$m.Reference}}</td>
+                    <td class="px-4 py-3 text-gray-600">{{if $m.UserName}}{{$m.UserName}}{{else}}—{{end}}</td>
+                </tr>
+                {{else}}
+                <tr><td colspan="6" class="px-4 py-8 text-center text-gray-500">No movements yet — use Stock In to receive the first stock.</td></tr>
+                {{end}}
+            </tbody>
+        </table>
+    </div>
+</div>
 {{end}}

@@ -52,3 +52,18 @@ Ambiguous calls made during the build, with rationale. Newest at the bottom.
 - **New products always start at quantity 0** — receiving stock is Phase 3's
   transactional stock-in; letting product creation set a quantity would bypass
   the stock invariant.
+
+## Phase 3
+
+- **Row lock (`SELECT ... FOR UPDATE`) serialises stock math** — every stock
+  operation locks the product row, computes the new balance, inserts the
+  movement, and updates the cached quantity in one transaction. A concurrency
+  test (20 goroutines vs 10 units) proves overselling is impossible.
+- **Adjustment stores the absolute delta** — `quantity` is always positive per
+  the schema comment; for adjustments it is `|new − old|`, direction is
+  recoverable from `quantity_after` vs the previous movement.
+- **Adjust form lives inline on the product detail page** — plan.md §7 defines
+  only `POST /products/{id}/adjust` (no GET form page), so a small inline form
+  with a confirm dialog fits better than a dedicated page.
+- **All roles may record stock in/out/adjust** — per the §8 capability matrix
+  (staff included); only catalog *editing* is restricted.

@@ -22,6 +22,7 @@ type ProductsHandler struct {
 	Stores     *service.StoreService
 	Categories *service.CategoryService
 	Suppliers  *service.SupplierService
+	Stock      *service.StockService
 }
 
 // Pagination is the view model for the pager partial.
@@ -233,9 +234,15 @@ func (h *ProductsHandler) Detail(w http.ResponseWriter, r *http.Request) {
 		h.ServerError(w, r, err)
 		return
 	}
+	movements, err := h.Stock.RecentForProduct(r.Context(), id, 10)
+	if err != nil {
+		h.ServerError(w, r, err)
+		return
+	}
 	d := h.NewData(r)
 	d.Title = p.Name
 	d.Data["Product"] = p
+	d.Data["Movements"] = movements
 	h.Render(w, r, http.StatusOK, "products/detail.html", d)
 }
 

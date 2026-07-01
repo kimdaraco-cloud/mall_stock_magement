@@ -177,6 +177,37 @@ func (r *ProductRepo) SetActive(ctx context.Context, id int64, active bool) erro
 	return nil
 }
 
+// GetQuantityForUpdate row-locks a product and returns its current quantity.
+// Call only inside a transaction (the lock is what makes stock math safe
+// under concurrency).
+func (r *ProductRepo) GetQuantityForUpdate(ctx context.Context, id int64) (int, error) {
+	var qty int
+	err := r.DB.QueryRow(ctx,
+		`SELECT quantity FROM products WHERE id = $1 FOR UPDATE`, id).Scan(&qty)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return 0, ErrNotFound
+		}
+		return 0, fmt.Errorf("lock product quantity: %w", err)
+	}
+	return qty, nil
+}
+
+// SetQuantity writes the cached stock total. STOCK INVARIANT: this must only
+// be called from the stock service, inside the same transaction that inserts
+// the matching stock_movements row. Never call it anywhere else.
+func (r *ProductRepo) SetQuantity(ctx context.Context, id int64, qty int) error {
+	tag, err := r.DB.Exec(ctx,
+		`UPDATE products SET quantity = $1, updated_at = now() WHERE id = $2`, qty, id)
+	if err != nil {
+		return fmt.Errorf("set product quantity: %w", err)
+	}
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("set product quantity: %w", ErrNotFound)
+	}
+	return nil
+}
+
 // SKUTaken reports whether sku is used by a product other than excludeID.
 func (r *ProductRepo) SKUTaken(ctx context.Context, sku string, excludeID int64) (bool, error) {
 	var exists bool
