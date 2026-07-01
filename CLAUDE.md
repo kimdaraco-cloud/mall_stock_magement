@@ -100,4 +100,6 @@ Non-negotiable rules:
 
 ## Current status
 
-Phase: **0 (setup)**. Update this line as phases complete so context is never lost between sessions.
+Phase: **0 complete — Phase 1 (auth & users) in progress**. Update this line as phases complete so context is never lost between sessions.
+
+<!-- @ai-modified 2026-07-02 update current-status line after Phase 0 -->
