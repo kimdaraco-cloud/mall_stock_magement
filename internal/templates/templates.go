@@ -48,6 +48,17 @@ type Cache struct {
 
 var funcs = template.FuncMap{
 	"now": time.Now,
+	// signed renders an int with an explicit sign so movement rows are
+	// self-describing (+5 received, −3 issued/corrected down).
+	"signed": func(n int) string {
+		if n > 0 {
+			return fmt.Sprintf("+%d", n)
+		}
+		if n < 0 {
+			return fmt.Sprintf("−%d", -n)
+		}
+		return "0"
+	},
 }
 
 // New builds the cache from a fs.FS rooted at the web directory

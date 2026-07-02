@@ -88,6 +88,7 @@ func TestStockOperations(t *testing.T) {
 		run       func(t *testing.T, productID int64)
 		wantQty   int
 		wantAfter []int // quantity_after per movement, oldest first
+		wantDelta []int // signed quantity_delta per movement, oldest first
 	}{
 		{
 			name: "receive then issue keeps a correct running balance",
@@ -98,6 +99,7 @@ func TestStockOperations(t *testing.T) {
 			},
 			wantQty:   8,
 			wantAfter: []int{10, 15, 8},
+			wantDelta: []int{10, 5, -7},
 		},
 		{
 			name: "issue below zero is rejected and leaves state untouched",
@@ -110,9 +112,10 @@ func TestStockOperations(t *testing.T) {
 			},
 			wantQty:   3,
 			wantAfter: []int{3},
+			wantDelta: []int{3},
 		},
 		{
-			name: "adjustment records the delta and sets the count",
+			name: "adjustment down records a negative signed delta",
 			run: func(t *testing.T, id int64) {
 				mustOK(t, errOnly(svc.ReceiveStock(ctx, MovementInput{ProductID: id, Quantity: 20})))
 				m, err := svc.AdjustStock(ctx, MovementInput{ProductID: id, Quantity: 12, Reference: "recount"})
@@ -120,11 +123,31 @@ func TestStockOperations(t *testing.T) {
 					t.Fatalf("adjust: %v", err)
 				}
 				if m.Quantity != 8 { // |12-20|
-					t.Errorf("adjustment delta = %d, want 8", m.Quantity)
+					t.Errorf("adjustment magnitude = %d, want 8", m.Quantity)
+				}
+				if m.QuantityDelta != -8 {
+					t.Errorf("adjustment signed delta = %d, want -8", m.QuantityDelta)
 				}
 			},
 			wantQty:   12,
 			wantAfter: []int{20, 12},
+			wantDelta: []int{20, -8},
+		},
+		{
+			name: "adjustment up records a positive signed delta",
+			run: func(t *testing.T, id int64) {
+				mustOK(t, errOnly(svc.ReceiveStock(ctx, MovementInput{ProductID: id, Quantity: 5})))
+				m, err := svc.AdjustStock(ctx, MovementInput{ProductID: id, Quantity: 9, Reference: "found stock"})
+				if err != nil {
+					t.Fatalf("adjust: %v", err)
+				}
+				if m.QuantityDelta != 4 {
+					t.Errorf("adjustment signed delta = %d, want 4", m.QuantityDelta)
+				}
+			},
+			wantQty:   9,
+			wantAfter: []int{5, 9},
+			wantDelta: []int{5, 4},
 		},
 		{
 			name: "zero or negative quantities are invalid",
@@ -138,6 +161,7 @@ func TestStockOperations(t *testing.T) {
 			},
 			wantQty:   0,
 			wantAfter: nil,
+			wantDelta: nil,
 		},
 	}
 
@@ -151,18 +175,19 @@ func TestStockOperations(t *testing.T) {
 			}
 
 			rows, err := pool.Query(ctx,
-				`SELECT quantity_after FROM stock_movements WHERE product_id = $1 ORDER BY id`, productID)
+				`SELECT quantity_after, quantity_delta FROM stock_movements WHERE product_id = $1 ORDER BY id`, productID)
 			if err != nil {
 				t.Fatalf("read movements: %v", err)
 			}
 			defer rows.Close()
-			var after []int
+			var after, delta []int
 			for rows.Next() {
-				var a int
-				if err := rows.Scan(&a); err != nil {
+				var a, d int
+				if err := rows.Scan(&a, &d); err != nil {
 					t.Fatalf("scan: %v", err)
 				}
 				after = append(after, a)
+				delta = append(delta, d)
 			}
 			if len(after) != len(tc.wantAfter) {
 				t.Fatalf("movement count = %d, want %d", len(after), len(tc.wantAfter))
@@ -170,6 +195,9 @@ func TestStockOperations(t *testing.T) {
 			for i := range after {
 				if after[i] != tc.wantAfter[i] {
 					t.Errorf("movement %d quantity_after = %d, want %d", i, after[i], tc.wantAfter[i])
+				}
+				if delta[i] != tc.wantDelta[i] {
+					t.Errorf("movement %d quantity_delta = %d, want %d", i, delta[i], tc.wantDelta[i])
 				}
 			}
 		})

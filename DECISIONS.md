@@ -92,3 +92,16 @@ Ambiguous calls made during the build, with rationale. Newest at the bottom.
 - **Handler/middleware tests are DB-free** — Healthz uses a fake pinger and
   RequireAuth/RequireRole inject a user via `middleware.WithUser`; service
   tests hit the real database (and skip when it's unreachable).
+
+## Post-Phase-5 fixes
+
+- **Signed `quantity_delta` column instead of splitting `movement_type`** —
+  the ask allowed either. Splitting into `adjustment_in`/`adjustment_out`
+  would have required rewriting the `movement_type` of historical rows (ruled
+  out) or leaving old rows non-self-describing. A new signed column keeps the
+  three movement types, leaves every audited value untouched, and makes all
+  rows — old and new — self-describing. Migration 000008 backfills it:
+  in → `+quantity`, out → `−quantity`, adjustment → `quantity_after −
+  LAG(quantity_after)` per product (0 for a product's first movement).
+  `quantity` stays always-positive; UI and CSV now display the signed delta
+  (CSV gained a `Delta` column, `Quantity` kept for magnitude).

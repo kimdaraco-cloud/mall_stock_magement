@@ -93,8 +93,8 @@
                 <tr>
                     <td class="px-4 py-3 whitespace-nowrap text-gray-600">{{$m.CreatedAt.Format "2006-01-02 15:04"}}</td>
                     <td class="px-4 py-3">{{template "movement-badge" $m.MovementType}}</td>
-                    <td class="px-4 py-3 text-right font-medium">
-                        {{if eq $m.MovementType "in"}}+{{end}}{{if eq $m.MovementType "out"}}−{{end}}{{$m.Quantity}}
+                    <td class="px-4 py-3 text-right font-medium {{if gt $m.QuantityDelta 0}}text-green-700{{else if lt $m.QuantityDelta 0}}text-amber-700{{end}}">
+                        {{signed $m.QuantityDelta}}
                     </td>
                     <td class="px-4 py-3 text-right">{{$m.QuantityAfter}}</td>
                     <td class="px-4 py-3 text-gray-600">{{$m.Reference}}</td>

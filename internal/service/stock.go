@@ -84,6 +84,7 @@ func (s *StockService) apply(ctx context.Context, in MovementInput, movementType
 			ProductID:     in.ProductID,
 			MovementType:  movementType,
 			Quantity:      movementQty,
+			QuantityDelta: newQty - current, // signed; makes adjustments self-describing
 			QuantityAfter: newQty,
 			Reference:     strings.TrimSpace(in.Reference),
 			Notes:         strings.TrimSpace(in.Notes),

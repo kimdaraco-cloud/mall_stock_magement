@@ -27,7 +27,7 @@ type MovementFilter struct {
 	PerPage   int
 }
 
-const movementCols = `m.id, m.product_id, m.movement_type, m.quantity, m.quantity_after,
+const movementCols = `m.id, m.product_id, m.movement_type, m.quantity, m.quantity_delta, m.quantity_after,
 	COALESCE(m.reference,''), COALESCE(m.notes,''), m.user_id, m.created_at,
 	p.name, p.sku, s.name, COALESCE(u.full_name,'')`
 
@@ -40,7 +40,7 @@ func (r *MovementRepo) scan(rows interface {
 	Scan(dest ...any) error
 }) (*models.StockMovement, error) {
 	var m models.StockMovement
-	err := rows.Scan(&m.ID, &m.ProductID, &m.MovementType, &m.Quantity, &m.QuantityAfter,
+	err := rows.Scan(&m.ID, &m.ProductID, &m.MovementType, &m.Quantity, &m.QuantityDelta, &m.QuantityAfter,
 		&m.Reference, &m.Notes, &m.UserID, &m.CreatedAt,
 		&m.ProductName, &m.ProductSKU, &m.StoreName, &m.UserName)
 	if err != nil {
@@ -52,9 +52,9 @@ func (r *MovementRepo) scan(rows interface {
 // Create inserts an immutable movement row.
 func (r *MovementRepo) Create(ctx context.Context, m *models.StockMovement) error {
 	err := r.DB.QueryRow(ctx,
-		`INSERT INTO stock_movements (product_id, movement_type, quantity, quantity_after, reference, notes, user_id)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, created_at`,
-		m.ProductID, m.MovementType, m.Quantity, m.QuantityAfter, m.Reference, m.Notes, m.UserID,
+		`INSERT INTO stock_movements (product_id, movement_type, quantity, quantity_delta, quantity_after, reference, notes, user_id)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id, created_at`,
+		m.ProductID, m.MovementType, m.Quantity, m.QuantityDelta, m.QuantityAfter, m.Reference, m.Notes, m.UserID,
 	).Scan(&m.ID, &m.CreatedAt)
 	if err != nil {
 		return fmt.Errorf("create movement: %w", err)

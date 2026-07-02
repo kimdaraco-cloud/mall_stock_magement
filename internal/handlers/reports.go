@@ -139,11 +139,13 @@ func (h *ReportsHandler) ExportCSV(w http.ResponseWriter, r *http.Request) {
 			h.ServerError(w, r, err)
 			return
 		}
-		_ = cw.Write([]string{"When", "Product", "SKU", "Store", "Type", "Quantity", "Balance after", "Reference", "Notes", "By"})
+		_ = cw.Write([]string{"When", "Product", "SKU", "Store", "Type", "Quantity", "Delta", "Balance after", "Reference", "Notes", "By"})
 		for _, m := range movements {
+			// Delta is signed (%+d) so every row is self-describing, including
+			// adjustments where Type alone doesn't give the direction.
 			_ = cw.Write([]string{m.CreatedAt.Format("2006-01-02 15:04:05"), m.ProductName, m.ProductSKU,
-				m.StoreName, m.MovementType, strconv.Itoa(m.Quantity), strconv.Itoa(m.QuantityAfter),
-				m.Reference, m.Notes, m.UserName})
+				m.StoreName, m.MovementType, strconv.Itoa(m.Quantity), fmt.Sprintf("%+d", m.QuantityDelta),
+				strconv.Itoa(m.QuantityAfter), m.Reference, m.Notes, m.UserName})
 		}
 
 	default:

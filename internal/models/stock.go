@@ -21,6 +21,7 @@ type StockMovement struct {
 	ProductID     int64
 	MovementType  string
 	Quantity      int // always positive
+	QuantityDelta int // signed change: +receive, −issue; adjustments carry their real direction
 	QuantityAfter int // running balance after this movement
 	Reference     string
 	Notes         string
